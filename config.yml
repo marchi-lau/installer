@@ -3,6 +3,41 @@
 
 # Global settings
 halt_on_error: false
+notifications: true
+
+# Dotfiles (runs first)
+dotfiles:
+  enabled: false  # Set to true and configure your repo
+  repo: https://github.com/YOUR_USERNAME/dotfiles.git
+  target_dir: ~/dotfiles
+  backup_dir: ~/.dotfiles_backup
+  symlinks:
+    - source: zshrc
+      target: ~/.zshrc
+      name: Zsh config
+    - source: gitconfig
+      target: ~/.gitconfig
+      name: Git config
+    - source: vimrc
+      target: ~/.vimrc
+      name: Vim config
+
+# macOS system preferences
+macos_defaults:
+  enabled: true
+  restart_apps: true
+  presets:
+    - developer   # Show hidden files, fast key repeat, etc.
+    - dock        # Auto-hide dock, no recents
+    # - trackpad  # Tap to click, three-finger drag
+    # - safari    # Dev tools, full URLs
+    # - privacy   # Disable Siri suggestions
+  custom: []
+  # custom:
+  #   - domain: com.apple.dock
+  #     key: tilesize
+  #     type: int
+  #     value: 36
 
 # Homebrew packages
 homebrew:
@@ -18,6 +53,7 @@ homebrew:
     - jq
     - tree
     - htop
+    - terminal-notifier  # For macOS notifications
     - neovim
     - ripgrep
     - fzf

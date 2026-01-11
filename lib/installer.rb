@@ -6,6 +6,7 @@ require_relative 'installer/base'
 require_relative 'installer/registry'
 require_relative 'installer/lockfile'
 require_relative 'installer/scanner'
+require_relative 'installer/notifier'
 
 # Load all installers
 Dir[File.join(__dir__, 'installer', 'installers', '*.rb')].each do |file|
@@ -121,6 +122,19 @@ module Installer
         @failed.each do |f|
           puts "  - #{f[:name]}: #{f[:error]}"
         end
+      end
+
+      # Send notification
+      send_notification
+    end
+
+    def send_notification
+      return unless @config.fetch(:notifications, true)
+
+      if @failed.empty?
+        Notifier.success("Installed #{@completed.size} components successfully!")
+      else
+        Notifier.error("#{@failed.size} components failed. Check terminal for details.")
       end
     end
 

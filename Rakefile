@@ -24,6 +24,20 @@ namespace :install do
     exit 1 unless success
   end
 
+  desc 'Clone and symlink dotfiles'
+  task :dotfiles do
+    config = load_config
+    installer = Installer::DotfilesInstaller.new(config[:dotfiles])
+    installer.install
+  end
+
+  desc 'Apply macOS system preferences'
+  task :macos_defaults do
+    config = load_config
+    installer = Installer::MacosDefaultsInstaller.new(config[:macos_defaults])
+    installer.install
+  end
+
   desc 'Install only Homebrew packages (formulae, casks, taps)'
   task :homebrew do
     config = load_config
@@ -102,6 +116,12 @@ namespace :install do
         puts "  Node.js Versions: #{section_config[:node_versions]&.join(', ') || 'none'}"
         puts "  Default: #{section_config[:default_version] || 'none'}"
         puts "  Global Packages: #{section_config[:global_packages]&.size || 0}"
+      when :dotfiles
+        puts "  Repo: #{section_config[:repo] || 'none'}"
+        puts "  Symlinks: #{section_config[:symlinks]&.size || 0}"
+      when :macos_defaults
+        puts "  Presets: #{section_config[:presets]&.join(', ') || 'none'}"
+        puts "  Custom: #{section_config[:custom]&.size || 0} settings"
       end
     end
     puts
@@ -113,6 +133,20 @@ namespace :uninstall do
   task :all do
     config = load_config
     Installer.uninstall_all(config)
+  end
+
+  desc 'Remove dotfiles symlinks'
+  task :dotfiles do
+    config = load_config
+    installer = Installer::DotfilesInstaller.new(config[:dotfiles])
+    installer.uninstall_all
+  end
+
+  desc 'Reset macOS defaults'
+  task :macos_defaults do
+    config = load_config
+    installer = Installer::MacosDefaultsInstaller.new(config[:macos_defaults])
+    installer.uninstall_all
   end
 
   desc 'Uninstall Homebrew packages'
@@ -413,23 +447,27 @@ task :default do
     ═══════════════════════════════════════════════════
 
     \e[36mInstallation:\e[0m
-      rake install:all        Run all enabled installers
-      rake install:homebrew   Install only Homebrew packages
-      rake install:rbenv      Install rbenv and Ruby versions
-      rake install:pyenv      Install pyenv and Python versions
-      rake install:fnm        Install fnm and Node.js versions
-      rake install:codex      Install only dev tools
-      rake install:appstore   Install only App Store apps
-      rake install:dry_run    Preview what would be installed
+      rake install:all           Run all enabled installers
+      rake install:dotfiles      Clone and symlink dotfiles
+      rake install:macos_defaults Apply macOS system preferences
+      rake install:homebrew      Install Homebrew packages
+      rake install:rbenv         Install rbenv and Ruby versions
+      rake install:pyenv         Install pyenv and Python versions
+      rake install:fnm           Install fnm and Node.js versions
+      rake install:codex         Install dev tools
+      rake install:appstore      Install App Store apps
+      rake install:dry_run       Preview what would be installed
 
     \e[36mUninstall:\e[0m
-      rake uninstall:all       Uninstall all components
-      rake uninstall:homebrew  Uninstall Homebrew packages
-      rake uninstall:rbenv     Uninstall rbenv and Rubies
-      rake uninstall:pyenv     Uninstall pyenv and Pythons
-      rake uninstall:fnm       Uninstall fnm and Node.js
-      rake uninstall:codex     Uninstall dev tools
-      rake uninstall:appstore  Uninstall App Store apps
+      rake uninstall:all           Uninstall all components
+      rake uninstall:dotfiles      Remove dotfiles symlinks
+      rake uninstall:macos_defaults Reset macOS defaults
+      rake uninstall:homebrew      Uninstall Homebrew packages
+      rake uninstall:rbenv         Uninstall rbenv and Rubies
+      rake uninstall:pyenv         Uninstall pyenv and Pythons
+      rake uninstall:fnm           Uninstall fnm and Node.js
+      rake uninstall:codex         Uninstall dev tools
+      rake uninstall:appstore      Uninstall App Store apps
 
     \e[36mStatus:\e[0m
       rake status:all         Show installation status

@@ -4,13 +4,15 @@ A modular, uninstall-capable macOS setup automation tool built with Rake.
 
 ## Features
 
-- **Modular Installers** - Homebrew, rbenv, pyenv, fnm, VS Code, App Store
+- **Modular Installers** - Dotfiles, macOS defaults, Homebrew, rbenv, pyenv, fnm, VS Code, App Store
+- **Dotfiles Manager** - Clone repo, symlink configs, backup existing files
+- **macOS Defaults** - System preferences via presets (developer, dock, trackpad, etc.)
+- **Notifications** - macOS notifications when install completes
 - **Progress Tracking** - Colored output with progress bars
 - **Uninstall Support** - Undo installations with state persistence
 - **Scan & Migrate** - Scan old Mac and generate config for new Mac
 - **Idempotent** - Skips already-installed items
 - **Lockfile** - Prevents concurrent runs
-- **Extensible** - Plugin registry for custom installers
 
 ## Quick Start
 
@@ -34,40 +36,46 @@ rake install:all
 
 ## Available Installers
 
-| Installer | Description | Config Key |
-|-----------|-------------|------------|
-| **Homebrew** | Formulae, casks, taps | `homebrew` |
-| **rbenv** | Ruby versions + gems | `rbenv` |
-| **pyenv** | Python versions + packages | `pyenv` |
-| **fnm** | Node.js versions + npm packages | `fnm` |
-| **Codex** | VS Code extensions, npm, pip | `codex` |
-| **App Store** | Mac App Store via mas | `appstore` |
+| Order | Installer | Description | Config Key |
+|-------|-----------|-------------|------------|
+| 1 | **Dotfiles** | Clone repo, symlink configs | `dotfiles` |
+| 2 | **macOS Defaults** | System preferences | `macos_defaults` |
+| 3 | **Homebrew** | Formulae, casks, taps | `homebrew` |
+| 4 | **rbenv** | Ruby versions + gems | `rbenv` |
+| 5 | **pyenv** | Python versions + packages | `pyenv` |
+| 6 | **fnm** | Node.js versions + npm packages | `fnm` |
+| 7 | **Codex** | VS Code extensions, npm, pip | `codex` |
+| 8 | **App Store** | Mac App Store via mas | `appstore` |
 
 ## Rake Tasks
 
 ### Installation
 
 ```bash
-rake install:all        # Run all enabled installers
-rake install:homebrew   # Homebrew packages only
-rake install:rbenv      # Ruby versions only
-rake install:pyenv      # Python versions only
-rake install:fnm        # Node.js versions only
-rake install:codex      # Dev tools only
-rake install:appstore   # App Store apps only
-rake install:dry_run    # Preview what would be installed
+rake install:all            # Run all enabled installers
+rake install:dotfiles       # Clone and symlink dotfiles
+rake install:macos_defaults # Apply macOS system preferences
+rake install:homebrew       # Homebrew packages only
+rake install:rbenv          # Ruby versions only
+rake install:pyenv          # Python versions only
+rake install:fnm            # Node.js versions only
+rake install:codex          # Dev tools only
+rake install:appstore       # App Store apps only
+rake install:dry_run        # Preview what would be installed
 ```
 
 ### Uninstall
 
 ```bash
-rake uninstall:all       # Undo all installations
-rake uninstall:homebrew  # Undo Homebrew only
-rake uninstall:rbenv     # Undo rbenv only
-rake uninstall:pyenv     # Undo pyenv only
-rake uninstall:fnm       # Undo fnm only
-rake uninstall:codex     # Undo dev tools only
-rake uninstall:appstore  # Undo App Store only
+rake uninstall:all            # Undo all installations
+rake uninstall:dotfiles       # Remove symlinks, restore backups
+rake uninstall:macos_defaults # Reset to original values
+rake uninstall:homebrew       # Undo Homebrew only
+rake uninstall:rbenv          # Undo rbenv only
+rake uninstall:pyenv          # Undo pyenv only
+rake uninstall:fnm            # Undo fnm only
+rake uninstall:codex          # Undo dev tools only
+rake uninstall:appstore       # Undo App Store only
 ```
 
 ### Status
@@ -126,9 +134,33 @@ The scanner detects:
 Edit `config.yml` to customize your installation:
 
 ```yaml
-# Disable a section
-appstore:
-  enabled: false
+# Global settings
+notifications: true      # macOS notifications when done
+halt_on_error: false     # Stop on first error
+
+# Dotfiles - clone and symlink
+dotfiles:
+  enabled: true
+  repo: https://github.com/YOUR_USER/dotfiles.git
+  target_dir: ~/dotfiles
+  symlinks:
+    - source: zshrc
+      target: ~/.zshrc
+    - source: gitconfig
+      target: ~/.gitconfig
+
+# macOS system preferences
+macos_defaults:
+  enabled: true
+  presets:
+    - developer  # Show hidden files, fast key repeat
+    - dock       # Auto-hide, no recents
+    - trackpad   # Tap to click
+  custom:
+    - domain: com.apple.dock
+      key: tilesize
+      type: int
+      value: 36
 
 # Homebrew packages
 homebrew:
