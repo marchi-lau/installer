@@ -52,6 +52,20 @@ namespace :install do
     installer.install
   end
 
+  desc 'Install pyenv and Python versions'
+  task :pyenv do
+    config = load_config
+    installer = Installer::PyenvInstaller.new(config[:pyenv])
+    installer.install
+  end
+
+  desc 'Install fnm and Node.js versions'
+  task :fnm do
+    config = load_config
+    installer = Installer::FnmInstaller.new(config[:fnm])
+    installer.install
+  end
+
   desc 'Dry run - show what would be installed without making changes'
   task :dry_run do
     config = load_config
@@ -80,6 +94,14 @@ namespace :install do
         puts "  Default: #{section_config[:default_version] || 'none'}"
         puts "  Global Gems: #{section_config[:global_gems]&.size || 0}"
         puts "  Plugins: #{section_config[:plugins]&.size || 0}"
+      when :pyenv
+        puts "  Python Versions: #{section_config[:python_versions]&.join(', ') || 'none'}"
+        puts "  Default: #{section_config[:default_version] || 'none'}"
+        puts "  Global Packages: #{section_config[:global_packages]&.size || 0}"
+      when :fnm
+        puts "  Node.js Versions: #{section_config[:node_versions]&.join(', ') || 'none'}"
+        puts "  Default: #{section_config[:default_version] || 'none'}"
+        puts "  Global Packages: #{section_config[:global_packages]&.size || 0}"
       end
     end
     puts
@@ -118,6 +140,20 @@ namespace :rollback do
   task :rbenv do
     config = load_config
     installer = Installer::RbenvInstaller.new(config[:rbenv])
+    installer.rollback
+  end
+
+  desc 'Rollback pyenv and Python versions'
+  task :pyenv do
+    config = load_config
+    installer = Installer::PyenvInstaller.new(config[:pyenv])
+    installer.rollback
+  end
+
+  desc 'Rollback fnm and Node.js versions'
+  task :fnm do
+    config = load_config
+    installer = Installer::FnmInstaller.new(config[:fnm])
     installer.rollback
   end
 end
@@ -164,9 +200,11 @@ namespace :status do
       'mas CLI' => -> { Installer::Command.which('mas') },
       'rbenv' => -> { Installer::Command.which('rbenv') },
       'Ruby' => -> { Installer::Command.which('ruby') },
+      'pyenv' => -> { Installer::Command.which('pyenv') },
+      'Python 3' => -> { Installer::Command.which('python3') },
+      'fnm' => -> { Installer::Command.which('fnm') },
       'Node.js' => -> { Installer::Command.which('node') },
       'npm' => -> { Installer::Command.which('npm') },
-      'Python 3' => -> { Installer::Command.which('python3') },
       'pip3' => -> { Installer::Command.which('pip3') },
       'VS Code CLI' => -> { Installer::Command.which('code') }
     }
@@ -345,6 +383,8 @@ task :default do
       rake install:all        Run all enabled installers
       rake install:homebrew   Install only Homebrew packages
       rake install:rbenv      Install rbenv and Ruby versions
+      rake install:pyenv      Install pyenv and Python versions
+      rake install:fnm        Install fnm and Node.js versions
       rake install:codex      Install only dev tools
       rake install:appstore   Install only App Store apps
       rake install:dry_run    Preview what would be installed
@@ -353,6 +393,8 @@ task :default do
       rake rollback:all       Rollback all installations
       rake rollback:homebrew  Rollback Homebrew only
       rake rollback:rbenv     Rollback rbenv only
+      rake rollback:pyenv     Rollback pyenv only
+      rake rollback:fnm       Rollback fnm only
       rake rollback:codex     Rollback dev tools only
       rake rollback:appstore  Rollback App Store only
 

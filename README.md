@@ -1,0 +1,207 @@
+# macOS Installer
+
+A modular, rollback-capable macOS setup automation tool built with Rake.
+
+## Features
+
+- **Modular Installers** - Homebrew, rbenv, pyenv, fnm, VS Code, App Store
+- **Progress Tracking** - Colored output with progress bars
+- **Rollback Support** - Undo installations with state persistence
+- **Idempotent** - Skips already-installed items
+- **Lockfile** - Prevents concurrent runs
+- **Extensible** - Plugin registry for custom installers
+
+## Quick Start
+
+```bash
+# Clone the repo
+git clone https://github.com/marchi-lau/installer.git
+cd installer
+
+# Install Ruby dependencies
+bundle install
+
+# Check prerequisites
+rake status:check
+
+# Preview installation
+rake install:dry_run
+
+# Run full installation
+rake install:all
+```
+
+## Available Installers
+
+| Installer | Description | Config Key |
+|-----------|-------------|------------|
+| **Homebrew** | Formulae, casks, taps | `homebrew` |
+| **rbenv** | Ruby versions + gems | `rbenv` |
+| **pyenv** | Python versions + packages | `pyenv` |
+| **fnm** | Node.js versions + npm packages | `fnm` |
+| **Codex** | VS Code extensions, npm, pip | `codex` |
+| **App Store** | Mac App Store via mas | `appstore` |
+
+## Rake Tasks
+
+### Installation
+
+```bash
+rake install:all        # Run all enabled installers
+rake install:homebrew   # Homebrew packages only
+rake install:rbenv      # Ruby versions only
+rake install:pyenv      # Python versions only
+rake install:fnm        # Node.js versions only
+rake install:codex      # Dev tools only
+rake install:appstore   # App Store apps only
+rake install:dry_run    # Preview what would be installed
+```
+
+### Rollback
+
+```bash
+rake rollback:all       # Undo all installations
+rake rollback:homebrew  # Undo Homebrew only
+rake rollback:rbenv     # Undo rbenv only
+rake rollback:pyenv     # Undo pyenv only
+rake rollback:fnm       # Undo fnm only
+rake rollback:codex     # Undo dev tools only
+rake rollback:appstore  # Undo App Store only
+```
+
+### Status
+
+```bash
+rake status:check       # Check system prerequisites
+rake status:all         # View installation history
+rake                    # Show all available tasks
+```
+
+### Configuration
+
+```bash
+rake config:generate    # Generate sample config.yml
+rake config:validate    # Validate configuration
+```
+
+## Configuration
+
+Edit `config.yml` to customize your installation:
+
+```yaml
+# Disable a section
+appstore:
+  enabled: false
+
+# Homebrew packages
+homebrew:
+  enabled: true
+  taps:
+    - homebrew/cask-fonts
+  formulae:
+    - git
+    - gh
+    - neovim
+  casks:
+    - visual-studio-code
+    - docker
+
+# Ruby versions
+rbenv:
+  enabled: true
+  ruby_versions:
+    - 3.3.0
+    - 3.2.2
+  default_version: 3.3.0
+  global_gems:
+    - bundler
+    - rails
+
+# Python versions
+pyenv:
+  enabled: true
+  python_versions:
+    - 3.12.0
+    - 3.11.0
+  default_version: 3.12.0
+  global_packages:
+    - poetry
+    - black
+
+# Node.js versions
+fnm:
+  enabled: true
+  node_versions:
+    - 22
+    - 20
+    - lts-iron
+  default_version: 22
+  global_packages:
+    - typescript
+    - pnpm
+```
+
+## Environment Variables
+
+```bash
+CONFIG_FILE=~/my-config.yml rake install:all
+```
+
+## State & Rollback
+
+Installation state is persisted to `~/.macos_installer/`:
+
+```
+~/.macos_installer/
+├── .installer.lock      # Prevents concurrent runs
+├── homebrew_state.json  # Installed Homebrew items
+├── rbenv_state.json     # Installed Ruby versions
+├── pyenv_state.json     # Installed Python versions
+├── fnm_state.json       # Installed Node versions
+├── codex_state.json     # Installed dev tools
+└── appstore_state.json  # Installed App Store apps
+```
+
+Rollback uses these state files to undo installations in reverse order.
+
+## Adding Custom Installers
+
+Create a new file in `lib/installer/installers/`:
+
+```ruby
+# lib/installer/installers/my_tool.rb
+module Installer
+  class MyToolInstaller < Base
+    def initialize(config)
+      super('my_tool')
+      @config = config
+    end
+
+    def install
+      # Implementation
+    end
+
+    def uninstall(item)
+      # Rollback implementation
+    end
+
+    def installed?(item)
+      # Check if already installed
+    end
+  end
+
+  Registry.register(:my_tool, MyToolInstaller,
+    description: 'Install my tool',
+    order: 50)
+end
+```
+
+## Requirements
+
+- macOS (tested on Ventura, Sonoma)
+- Ruby 3.0+
+- Bundler
+
+## License
+
+MIT

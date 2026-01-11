@@ -55,6 +55,33 @@ rbenv:
     - nokogiri
     - sinatra
 
+# Python version manager (pyenv)
+pyenv:
+  enabled: true
+  python_versions:
+    - 3.12.0
+    - 3.11.0
+  default_version: 3.12.0
+  global_packages:
+    - poetry
+    - black
+    - ruff
+    - mypy
+    - ipython
+
+# Node.js version manager (fnm)
+fnm:
+  enabled: true
+  node_versions:
+    - 22
+    - 20
+  default_version: 22
+  global_packages:
+    - typescript
+    - pnpm
+    - yarn
+    - tsx
+
 # Development tools
 codex:
   enabled: true

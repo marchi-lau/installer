@@ -4,6 +4,7 @@ require_relative 'installer/progress'
 require_relative 'installer/command'
 require_relative 'installer/base'
 require_relative 'installer/registry'
+require_relative 'installer/lockfile'
 
 # Load all installers
 Dir[File.join(__dir__, 'installer', 'installers', '*.rb')].each do |file|
@@ -34,6 +35,8 @@ module Installer
     end
 
     def run
+      Lockfile.acquire!
+
       puts banner('macOS Setup Installer')
       puts "Version: #{VERSION}"
       puts "Started at: #{Time.now.strftime('%Y-%m-%d %H:%M:%S')}"
@@ -49,9 +52,16 @@ module Installer
 
       print_summary
       @failed.empty?
+    rescue Lockfile::AlreadyRunningError => e
+      puts "\e[31mError: #{e.message}\e[0m"
+      puts "Wait for the other process to finish or remove the lock file:"
+      puts "  rm #{Lockfile::LOCK_PATH}"
+      false
     end
 
     def rollback
+      Lockfile.acquire!
+
       puts banner('Rolling Back Installation')
 
       @completed.reverse.each do |name|
@@ -60,6 +70,9 @@ module Installer
       rescue StandardError => e
         puts "Failed to rollback #{name}: #{e.message}"
       end
+    rescue Lockfile::AlreadyRunningError => e
+      puts "\e[31mError: #{e.message}\e[0m"
+      false
     end
 
     private
