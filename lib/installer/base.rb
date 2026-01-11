@@ -4,7 +4,7 @@ require 'json'
 require 'fileutils'
 
 module Installer
-  # Base class for all installer tasks with rollback support
+  # Base class for all installer tasks with uninstall support
   class Base
     STATE_DIR = File.expand_path('~/.macos_installer')
 
@@ -32,22 +32,22 @@ module Installer
       raise NotImplementedError, "#{self.class} must implement #installed?"
     end
 
-    def rollback
-      progress.start_rollback
+    def uninstall_all
+      progress.start_uninstall
       load_state
 
       @installed_items.reverse.each do |item|
         begin
-          progress.log("Rolling back: #{item[:name]}")
+          progress.log("Uninstalling: #{item[:name]}")
           uninstall(item)
-          progress.item_rolled_back(item[:name])
+          progress.item_uninstalled(item[:name])
         rescue StandardError => e
-          progress.error("Failed to rollback #{item[:name]}: #{e.message}")
+          progress.error("Failed to uninstall #{item[:name]}: #{e.message}")
         end
       end
 
       clear_state
-      progress.complete_rollback
+      progress.complete_uninstall
     end
 
     protected

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Installer
-  # Homebrew package installer with rollback support
+  # Homebrew package installer with uninstall support
   class HomebrewInstaller < Base
     def initialize(config)
       super('homebrew')

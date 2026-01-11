@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Installer
-  # Mac App Store installer using mas CLI with rollback support
+  # Mac App Store installer using mas CLI with uninstall support
   class AppStoreInstaller < Base
     def initialize(config)
       super('appstore')

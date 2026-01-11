@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Installer
-  # fnm (Fast Node Manager) installer with rollback support
+  # fnm (Fast Node Manager) installer with uninstall support
   # Using fnm over nvm for better performance and Homebrew support
   class FnmInstaller < Base
     FNM_DIR = ENV['FNM_DIR'] || File.expand_path('~/.fnm')

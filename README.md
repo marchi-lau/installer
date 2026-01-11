@@ -1,12 +1,12 @@
 # macOS Installer
 
-A modular, rollback-capable macOS setup automation tool built with Rake.
+A modular, uninstall-capable macOS setup automation tool built with Rake.
 
 ## Features
 
 - **Modular Installers** - Homebrew, rbenv, pyenv, fnm, VS Code, App Store
 - **Progress Tracking** - Colored output with progress bars
-- **Rollback Support** - Undo installations with state persistence
+- **Uninstall Support** - Undo installations with state persistence
 - **Idempotent** - Skips already-installed items
 - **Lockfile** - Prevents concurrent runs
 - **Extensible** - Plugin registry for custom installers
@@ -57,16 +57,16 @@ rake install:appstore   # App Store apps only
 rake install:dry_run    # Preview what would be installed
 ```
 
-### Rollback
+### Uninstall
 
 ```bash
-rake rollback:all       # Undo all installations
-rake rollback:homebrew  # Undo Homebrew only
-rake rollback:rbenv     # Undo rbenv only
-rake rollback:pyenv     # Undo pyenv only
-rake rollback:fnm       # Undo fnm only
-rake rollback:codex     # Undo dev tools only
-rake rollback:appstore  # Undo App Store only
+rake uninstall:all       # Undo all installations
+rake uninstall:homebrew  # Undo Homebrew only
+rake uninstall:rbenv     # Undo rbenv only
+rake uninstall:pyenv     # Undo pyenv only
+rake uninstall:fnm       # Undo fnm only
+rake uninstall:codex     # Undo dev tools only
+rake uninstall:appstore  # Undo App Store only
 ```
 
 ### Status
@@ -147,7 +147,7 @@ fnm:
 CONFIG_FILE=~/my-config.yml rake install:all
 ```
 
-## State & Rollback
+## State & Uninstall
 
 Installation state is persisted to `~/.macos_installer/`:
 
@@ -162,7 +162,7 @@ Installation state is persisted to `~/.macos_installer/`:
 └── appstore_state.json  # Installed App Store apps
 ```
 
-Rollback uses these state files to undo installations in reverse order.
+Uninstall uses these state files to undo installations in reverse order.
 
 ## Adding Custom Installers
 
@@ -182,7 +182,7 @@ module Installer
     end
 
     def uninstall(item)
-      # Rollback implementation
+      # Uninstall implementation
     end
 
     def installed?(item)

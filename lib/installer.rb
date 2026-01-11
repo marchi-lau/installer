@@ -20,9 +20,9 @@ module Installer
       orchestrator.run
     end
 
-    def rollback_all(config)
+    def uninstall_all(config)
       orchestrator = Orchestrator.new(config)
-      orchestrator.rollback
+      orchestrator.uninstall
     end
   end
 
@@ -59,16 +59,16 @@ module Installer
       false
     end
 
-    def rollback
+    def uninstall
       Lockfile.acquire!
 
-      puts banner('Rolling Back Installation')
+      puts banner('Uninstalling Components')
 
       @completed.reverse.each do |name|
         installer = Registry.create(name, @config[name])
-        installer.rollback
+        installer.uninstall_all
       rescue StandardError => e
-        puts "Failed to rollback #{name}: #{e.message}"
+        puts "Failed to uninstall #{name}: #{e.message}"
       end
     rescue Lockfile::AlreadyRunningError => e
       puts "\e[31mError: #{e.message}\e[0m"
@@ -104,8 +104,8 @@ module Installer
       puts "Error in #{name}: #{e.message}"
 
       if @config[:halt_on_error]
-        puts "Halting due to error. Rolling back..."
-        rollback
+        puts "Halting due to error. Uninstalling..."
+        uninstall
         exit 1
       end
     end

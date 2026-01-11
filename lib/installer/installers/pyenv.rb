@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Installer
-  # pyenv Python version manager installer with rollback support
+  # pyenv Python version manager installer with uninstall support
   class PyenvInstaller < Base
     PYENV_ROOT = ENV['PYENV_ROOT'] || File.expand_path('~/.pyenv')
 

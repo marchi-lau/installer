@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Installer
-  # rbenv Ruby version manager installer with rollback support
+  # rbenv Ruby version manager installer with uninstall support
   class RbenvInstaller < Base
     RBENV_ROOT = ENV['RBENV_ROOT'] || File.expand_path('~/.rbenv')
 

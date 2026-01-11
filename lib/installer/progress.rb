@@ -19,7 +19,7 @@ module Installer
       complete: '✓',
       skip: '○',
       error: '✗',
-      rollback: '↺',
+      uninstall: '✗',
       progress: '→'
     }.freeze
 
@@ -62,8 +62,8 @@ module Installer
       puts colorize("#{name} already installed, skipping", :yellow)
     end
 
-    def item_rolled_back(name)
-      puts colorize("    #{ICONS[:rollback]} #{name} removed", :magenta)
+    def item_uninstalled(name)
+      puts colorize("    #{ICONS[:uninstall]} #{name} removed", :magenta)
     end
 
     def error(message)
@@ -85,14 +85,14 @@ module Installer
       puts
     end
 
-    def start_rollback
-      puts colorize("\n#{ICONS[:rollback]} Starting rollback for #{task_name}", :magenta, :bold)
+    def start_uninstall
+      puts colorize("\n#{ICONS[:uninstall]} Starting uninstall for #{task_name}", :magenta, :bold)
       puts separator
     end
 
-    def complete_rollback
+    def complete_uninstall
       puts separator
-      puts colorize("#{ICONS[:complete]} Rollback completed for #{task_name}", :magenta, :bold)
+      puts colorize("#{ICONS[:complete]} Uninstall completed for #{task_name}", :magenta, :bold)
       puts
     end
 

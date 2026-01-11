@@ -108,53 +108,53 @@ namespace :install do
   end
 end
 
-namespace :rollback do
-  desc 'Rollback all installations'
+namespace :uninstall do
+  desc 'Uninstall all components'
   task :all do
     config = load_config
-    Installer.rollback_all(config)
+    Installer.uninstall_all(config)
   end
 
-  desc 'Rollback only Homebrew installations'
+  desc 'Uninstall Homebrew packages'
   task :homebrew do
     config = load_config
     installer = Installer::HomebrewInstaller.new(config[:homebrew])
-    installer.rollback
+    installer.uninstall_all
   end
 
-  desc 'Rollback only App Store installations'
+  desc 'Uninstall App Store apps'
   task :appstore do
     config = load_config
     installer = Installer::AppStoreInstaller.new(config[:appstore])
-    installer.rollback
+    installer.uninstall_all
   end
 
-  desc 'Rollback only development tools'
+  desc 'Uninstall development tools'
   task :codex do
     config = load_config
     installer = Installer::CodexInstaller.new(config[:codex])
-    installer.rollback
+    installer.uninstall_all
   end
 
-  desc 'Rollback rbenv and Ruby versions'
+  desc 'Uninstall rbenv and Ruby versions'
   task :rbenv do
     config = load_config
     installer = Installer::RbenvInstaller.new(config[:rbenv])
-    installer.rollback
+    installer.uninstall_all
   end
 
-  desc 'Rollback pyenv and Python versions'
+  desc 'Uninstall pyenv and Python versions'
   task :pyenv do
     config = load_config
     installer = Installer::PyenvInstaller.new(config[:pyenv])
-    installer.rollback
+    installer.uninstall_all
   end
 
-  desc 'Rollback fnm and Node.js versions'
+  desc 'Uninstall fnm and Node.js versions'
   task :fnm do
     config = load_config
     installer = Installer::FnmInstaller.new(config[:fnm])
-    installer.rollback
+    installer.uninstall_all
   end
 end
 
@@ -389,14 +389,14 @@ task :default do
       rake install:appstore   Install only App Store apps
       rake install:dry_run    Preview what would be installed
 
-    \e[36mRollback:\e[0m
-      rake rollback:all       Rollback all installations
-      rake rollback:homebrew  Rollback Homebrew only
-      rake rollback:rbenv     Rollback rbenv only
-      rake rollback:pyenv     Rollback pyenv only
-      rake rollback:fnm       Rollback fnm only
-      rake rollback:codex     Rollback dev tools only
-      rake rollback:appstore  Rollback App Store only
+    \e[36mUninstall:\e[0m
+      rake uninstall:all       Uninstall all components
+      rake uninstall:homebrew  Uninstall Homebrew packages
+      rake uninstall:rbenv     Uninstall rbenv and Rubies
+      rake uninstall:pyenv     Uninstall pyenv and Pythons
+      rake uninstall:fnm       Uninstall fnm and Node.js
+      rake uninstall:codex     Uninstall dev tools
+      rake uninstall:appstore  Uninstall App Store apps
 
     \e[36mStatus:\e[0m
       rake status:all         Show installation status

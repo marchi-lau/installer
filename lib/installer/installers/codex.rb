@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Installer
-  # Codex/Development tools installer with rollback support
+  # Codex/Development tools installer with uninstall support
   # Handles VS Code extensions, npm global packages, and other dev tools
   class CodexInstaller < Base
     def initialize(config)
