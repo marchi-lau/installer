@@ -7,6 +7,7 @@ require_relative 'installer/registry'
 require_relative 'installer/lockfile'
 require_relative 'installer/scanner'
 require_relative 'installer/notifier'
+require_relative 'installer/logger'
 
 # Load all installers
 Dir[File.join(__dir__, 'installer', 'installers', '*.rb')].each do |file|
@@ -38,12 +39,16 @@ module Installer
 
     def run
       Lockfile.acquire!
+      start_logging('install')
 
       puts banner('macOS Setup Installer')
       puts "Version: #{VERSION}"
       puts "Started at: #{Time.now.strftime('%Y-%m-%d %H:%M:%S')}"
+      log_file = Logger.instance.log_file
+      puts "Log file: #{log_file}" if log_file
       puts
 
+      Logger.info("Starting installation", component: 'orchestrator')
       check_system_requirements
 
       Registry.all.each do |name, entry|
@@ -53,8 +58,10 @@ module Installer
       end
 
       print_summary
+      Logger.end_session(success: @failed.empty?)
       @failed.empty?
     rescue Lockfile::AlreadyRunningError => e
+      Logger.error(e.message, component: 'lockfile')
       puts "\e[31mError: #{e.message}\e[0m"
       puts "Wait for the other process to finish or remove the lock file:"
       puts "  rm #{Lockfile::LOCK_PATH}"
@@ -94,21 +101,35 @@ module Installer
     def run_installer(name, entry)
       missing_deps = Registry.check_dependencies(name)
       unless missing_deps.empty?
+        Logger.warn("Skipping #{name}: missing dependencies #{missing_deps.join(', ')}", component: name.to_s)
         puts "Skipping #{name}: missing dependencies #{missing_deps.join(', ')}"
         return
       end
 
+      Logger.info("Starting #{name}", component: name.to_s)
       installer = entry[:class].new(@config[name])
       installer.install
       @completed << name
+      Logger.info("Completed #{name}", component: name.to_s)
     rescue StandardError => e
       @failed << { name: name, error: e.message }
+      Logger.error("#{name} failed: #{e.message}", component: name.to_s)
+      Logger.debug(e.backtrace.join("\n"), component: name.to_s) if e.backtrace
       puts "Error in #{name}: #{e.message}"
 
       if @config[:halt_on_error]
         puts "Halting due to error. Uninstalling..."
         uninstall
         exit 1
+      end
+    end
+
+    def start_logging(session_name)
+      if @config.fetch(:logging, true)
+        Logger.instance.start_session(session_name)
+        Logger.clean_old_logs(keep: @config.fetch(:log_retention, 10))
+      else
+        Logger.instance.disable!
       end
     end
 

@@ -4,6 +4,8 @@
 # Global settings
 halt_on_error: false
 notifications: true
+logging: true
+log_retention: 10  # Keep last 10 log files
 
 # Dotfiles (runs first)
 dotfiles:
@@ -21,6 +23,34 @@ dotfiles:
     - source: vimrc
       target: ~/.vimrc
       name: Vim config
+
+# Git and SSH configuration
+git_ssh:
+  enabled: true
+  git:
+    name: Your Name
+    email: your.email@example.com
+    default_branch: main
+    editor: code --wait  # VS Code as git editor
+    pull_rebase: true
+    auto_setup_remote: true
+    aliases:
+      co: checkout
+      br: branch
+      ci: commit
+      st: status
+      lg: log --oneline --graph --decorate
+  ssh:
+    generate_key: true
+    key_type: ed25519
+    email: your.email@example.com  # Comment for SSH key
+    add_to_agent: true
+    # configure_hosts: true
+    # hosts:
+    #   - name: github.com
+    #     hostname: github.com
+    #     user: git
+    #     identity_file: ~/.ssh/id_ed25519
 
 # macOS system preferences
 macos_defaults:

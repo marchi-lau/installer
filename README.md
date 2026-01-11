@@ -4,10 +4,12 @@ A modular, uninstall-capable macOS setup automation tool built with Rake.
 
 ## Features
 
-- **Modular Installers** - Dotfiles, macOS defaults, Homebrew, rbenv, pyenv, fnm, VS Code, App Store
+- **Modular Installers** - Dotfiles, Git/SSH, macOS defaults, Homebrew, rbenv, pyenv, fnm, VS Code, App Store
 - **Dotfiles Manager** - Clone repo, symlink configs, backup existing files
+- **Git & SSH Setup** - Configure git, generate SSH keys, add to keychain
 - **macOS Defaults** - System preferences via presets (developer, dock, trackpad, etc.)
 - **Notifications** - macOS notifications when install completes
+- **Logging** - Full logs to `~/.macos_installer/logs/` for debugging
 - **Progress Tracking** - Colored output with progress bars
 - **Uninstall Support** - Undo installations with state persistence
 - **Scan & Migrate** - Scan old Mac and generate config for new Mac
@@ -39,13 +41,14 @@ rake install:all
 | Order | Installer | Description | Config Key |
 |-------|-----------|-------------|------------|
 | 1 | **Dotfiles** | Clone repo, symlink configs | `dotfiles` |
-| 2 | **macOS Defaults** | System preferences | `macos_defaults` |
-| 3 | **Homebrew** | Formulae, casks, taps | `homebrew` |
-| 4 | **rbenv** | Ruby versions + gems | `rbenv` |
-| 5 | **pyenv** | Python versions + packages | `pyenv` |
-| 6 | **fnm** | Node.js versions + npm packages | `fnm` |
-| 7 | **Codex** | VS Code extensions, npm, pip | `codex` |
-| 8 | **App Store** | Mac App Store via mas | `appstore` |
+| 2 | **Git & SSH** | Git config, SSH keys, keychain | `git_ssh` |
+| 3 | **macOS Defaults** | System preferences | `macos_defaults` |
+| 4 | **Homebrew** | Formulae, casks, taps | `homebrew` |
+| 5 | **rbenv** | Ruby versions + gems | `rbenv` |
+| 6 | **pyenv** | Python versions + packages | `pyenv` |
+| 7 | **fnm** | Node.js versions + npm packages | `fnm` |
+| 8 | **Codex** | VS Code extensions, npm, pip | `codex` |
+| 9 | **App Store** | Mac App Store via mas | `appstore` |
 
 ## Rake Tasks
 
@@ -54,6 +57,7 @@ rake install:all
 ```bash
 rake install:all            # Run all enabled installers
 rake install:dotfiles       # Clone and symlink dotfiles
+rake install:git_ssh        # Configure Git and SSH keys
 rake install:macos_defaults # Apply macOS system preferences
 rake install:homebrew       # Homebrew packages only
 rake install:rbenv          # Ruby versions only
@@ -69,6 +73,7 @@ rake install:dry_run        # Preview what would be installed
 ```bash
 rake uninstall:all            # Undo all installations
 rake uninstall:dotfiles       # Remove symlinks, restore backups
+rake uninstall:git_ssh        # Remove Git config and SSH keys
 rake uninstall:macos_defaults # Reset to original values
 rake uninstall:homebrew       # Undo Homebrew only
 rake uninstall:rbenv          # Undo rbenv only
@@ -76,6 +81,16 @@ rake uninstall:pyenv          # Undo pyenv only
 rake uninstall:fnm            # Undo fnm only
 rake uninstall:codex          # Undo dev tools only
 rake uninstall:appstore       # Undo App Store only
+```
+
+### Logs
+
+```bash
+rake logs:list              # List all log files
+rake logs:show              # Show latest log
+rake logs:tail              # Tail latest log
+rake logs:clean             # Clean old logs
+rake logs:open              # Open logs in Finder
 ```
 
 ### Status
@@ -137,6 +152,7 @@ Edit `config.yml` to customize your installation:
 # Global settings
 notifications: true      # macOS notifications when done
 halt_on_error: false     # Stop on first error
+logging: true            # Write logs to ~/.macos_installer/logs/
 
 # Dotfiles - clone and symlink
 dotfiles:
@@ -146,8 +162,21 @@ dotfiles:
   symlinks:
     - source: zshrc
       target: ~/.zshrc
-    - source: gitconfig
-      target: ~/.gitconfig
+
+# Git and SSH setup
+git_ssh:
+  enabled: true
+  git:
+    name: Your Name
+    email: you@example.com
+    default_branch: main
+    aliases:
+      co: checkout
+      st: status
+  ssh:
+    generate_key: true
+    key_type: ed25519
+    add_to_agent: true
 
 # macOS system preferences
 macos_defaults:

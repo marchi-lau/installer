@@ -38,6 +38,13 @@ namespace :install do
     installer.install
   end
 
+  desc 'Configure Git and generate SSH keys'
+  task :git_ssh do
+    config = load_config
+    installer = Installer::GitSshInstaller.new(config[:git_ssh])
+    installer.install
+  end
+
   desc 'Install only Homebrew packages (formulae, casks, taps)'
   task :homebrew do
     config = load_config
@@ -122,6 +129,11 @@ namespace :install do
       when :macos_defaults
         puts "  Presets: #{section_config[:presets]&.join(', ') || 'none'}"
         puts "  Custom: #{section_config[:custom]&.size || 0} settings"
+      when :git_ssh
+        git_cfg = section_config[:git] || {}
+        ssh_cfg = section_config[:ssh] || {}
+        puts "  Git: #{git_cfg[:name]} <#{git_cfg[:email]}>" if git_cfg[:name]
+        puts "  SSH Key: #{ssh_cfg[:key_type] || 'ed25519'}" if ssh_cfg[:generate_key]
       end
     end
     puts
@@ -146,6 +158,13 @@ namespace :uninstall do
   task :macos_defaults do
     config = load_config
     installer = Installer::MacosDefaultsInstaller.new(config[:macos_defaults])
+    installer.uninstall_all
+  end
+
+  desc 'Remove Git config and SSH keys'
+  task :git_ssh do
+    config = load_config
+    installer = Installer::GitSshInstaller.new(config[:git_ssh])
     installer.uninstall_all
   end
 
@@ -438,6 +457,64 @@ namespace :scan do
   end
 end
 
+namespace :logs do
+  desc 'List all log files'
+  task :list do
+    logs = Installer::Logger.instance.list_logs
+    if logs.empty?
+      puts "No log files found."
+    else
+      puts "\n\e[1mLog Files\e[0m"
+      puts "═" * 50
+      logs.each_with_index do |log, i|
+        size = File.size(log)
+        mtime = File.mtime(log).strftime('%Y-%m-%d %H:%M')
+        puts "  #{i + 1}. #{File.basename(log)} (#{size} bytes, #{mtime})"
+      end
+      puts
+    end
+  end
+
+  desc 'Show latest log file'
+  task :show do
+    logs = Installer::Logger.instance.list_logs
+    if logs.empty?
+      puts "No log files found."
+    else
+      puts File.read(logs.first)
+    end
+  end
+
+  desc 'Tail latest log (last 50 lines)'
+  task :tail, [:lines] do |_t, args|
+    lines = (args[:lines] || 50).to_i
+    logs = Installer::Logger.instance.list_logs
+    if logs.empty?
+      puts "No log files found."
+    else
+      content = File.readlines(logs.first).last(lines)
+      puts content.join
+    end
+  end
+
+  desc 'Clean old log files (keep last 5)'
+  task :clean, [:keep] do |_t, args|
+    keep = (args[:keep] || 5).to_i
+    Installer::Logger.instance.clean_old_logs(keep: keep)
+    puts "Cleaned old logs, keeping last #{keep}."
+  end
+
+  desc 'Open logs directory'
+  task :open do
+    logs_dir = Installer::Logger::LOGS_DIR
+    if Dir.exist?(logs_dir)
+      system("open '#{logs_dir}'") if Installer::Command.macos?
+    else
+      puts "Logs directory not found: #{logs_dir}"
+    end
+  end
+end
+
 # Default task
 desc 'Show available tasks'
 task :default do
@@ -447,42 +524,51 @@ task :default do
     ═══════════════════════════════════════════════════
 
     \e[36mInstallation:\e[0m
-      rake install:all           Run all enabled installers
-      rake install:dotfiles      Clone and symlink dotfiles
+      rake install:all            Run all enabled installers
+      rake install:dotfiles       Clone and symlink dotfiles
+      rake install:git_ssh        Configure Git and SSH keys
       rake install:macos_defaults Apply macOS system preferences
-      rake install:homebrew      Install Homebrew packages
-      rake install:rbenv         Install rbenv and Ruby versions
-      rake install:pyenv         Install pyenv and Python versions
-      rake install:fnm           Install fnm and Node.js versions
-      rake install:codex         Install dev tools
-      rake install:appstore      Install App Store apps
-      rake install:dry_run       Preview what would be installed
+      rake install:homebrew       Install Homebrew packages
+      rake install:rbenv          Install rbenv and Ruby versions
+      rake install:pyenv          Install pyenv and Python versions
+      rake install:fnm            Install fnm and Node.js versions
+      rake install:codex          Install dev tools
+      rake install:appstore       Install App Store apps
+      rake install:dry_run        Preview what would be installed
 
     \e[36mUninstall:\e[0m
-      rake uninstall:all           Uninstall all components
-      rake uninstall:dotfiles      Remove dotfiles symlinks
+      rake uninstall:all            Uninstall all components
+      rake uninstall:dotfiles       Remove dotfiles symlinks
+      rake uninstall:git_ssh        Remove Git config and SSH keys
       rake uninstall:macos_defaults Reset macOS defaults
-      rake uninstall:homebrew      Uninstall Homebrew packages
-      rake uninstall:rbenv         Uninstall rbenv and Rubies
-      rake uninstall:pyenv         Uninstall pyenv and Pythons
-      rake uninstall:fnm           Uninstall fnm and Node.js
-      rake uninstall:codex         Uninstall dev tools
-      rake uninstall:appstore      Uninstall App Store apps
+      rake uninstall:homebrew       Uninstall Homebrew packages
+      rake uninstall:rbenv          Uninstall rbenv and Rubies
+      rake uninstall:pyenv          Uninstall pyenv and Pythons
+      rake uninstall:fnm            Uninstall fnm and Node.js
+      rake uninstall:codex          Uninstall dev tools
+      rake uninstall:appstore       Uninstall App Store apps
 
     \e[36mStatus:\e[0m
-      rake status:all         Show installation status
-      rake status:check       Check system prerequisites
+      rake status:all           Show installation status
+      rake status:check         Check system prerequisites
 
     \e[36mConfiguration:\e[0m
-      rake config:generate    Generate sample config.yml
-      rake config:validate    Validate configuration file
+      rake config:generate      Generate sample config.yml
+      rake config:validate      Validate configuration file
 
     \e[36mScan (migrate from old Mac):\e[0m
-      rake scan:show          Scan and show installed apps
-      rake scan:generate      Generate config from installed apps
-      rake scan:homebrew      Scan only Homebrew packages
-      rake scan:versions      Scan only rbenv/pyenv/fnm
-      rake scan:appstore      Scan only App Store apps
+      rake scan:show            Scan and show installed apps
+      rake scan:generate        Generate config from installed apps
+      rake scan:homebrew        Scan only Homebrew packages
+      rake scan:versions        Scan only rbenv/pyenv/fnm
+      rake scan:appstore        Scan only App Store apps
+
+    \e[36mLogs:\e[0m
+      rake logs:list            List all log files
+      rake logs:show            Show latest log file
+      rake logs:tail            Tail latest log (last 50 lines)
+      rake logs:clean           Clean old logs (keep last 5)
+      rake logs:open            Open logs directory in Finder
 
     \e[33mUsage:\e[0m
       1. Run 'rake config:generate' to create config.yml
