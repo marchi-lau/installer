@@ -1,0 +1,102 @@
+# macOS Installer Configuration
+# Customize this file with your preferred apps and tools
+
+# Global settings
+halt_on_error: false
+
+# Homebrew packages
+homebrew:
+  enabled: true
+  taps:
+    - homebrew/cask-fonts
+    - homebrew/cask-versions
+
+  formulae:
+    - git
+    - wget
+    - curl
+    - jq
+    - tree
+    - htop
+    - neovim
+    - ripgrep
+    - fzf
+    - tmux
+    - gh  # GitHub CLI
+
+  casks:
+    - visual-studio-code
+    - iterm2
+    - docker
+    - rectangle
+    - alfred
+    - 1password
+    - slack
+    - notion
+    - figma
+    - postman
+
+# Ruby version manager (rbenv)
+rbenv:
+  enabled: true
+  ruby_versions:
+    - 3.3.0
+    - 3.2.2
+  default_version: 3.3.0
+  plugins:
+    - name: rbenv-gemset
+      repo: jf/rbenv-gemset
+  global_gems:
+    - bundler
+    - rake
+    - solargraph  # Ruby language server
+    - rubocop
+    - pry
+    - nokogiri
+    - sinatra
+
+# Development tools
+codex:
+  enabled: true
+  vscode_extensions:
+    - ms-python.python
+    - ms-vscode.vscode-typescript-next
+    - esbenp.prettier-vscode
+    - dbaeumer.vscode-eslint
+    - eamodio.gitlens
+    - github.copilot
+    - bradlc.vscode-tailwindcss
+
+  npm_globals:
+    - typescript
+    - eslint
+    - prettier
+    - nodemon
+    - yarn
+    - pnpm
+
+  pip_packages:
+    - black
+    - flake8
+    - mypy
+    - poetry
+
+  custom_scripts:
+    - name: Oh My Zsh
+      install: sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+      rollback: rm -rf ~/.oh-my-zsh
+      check: test -d ~/.oh-my-zsh
+
+# Mac App Store apps (requires App Store sign-in)
+appstore:
+  enabled: true
+  require_signin: true
+  apps:
+    - id: 497799835
+      name: Xcode
+    - id: 1475387142
+      name: Tailscale
+    - id: 937984704
+      name: Amphetamine
+    - id: 1176895641
+      name: Spark
