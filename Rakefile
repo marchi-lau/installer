@@ -371,6 +371,39 @@ namespace :config do
   end
 end
 
+namespace :scan do
+  desc 'Scan system and show installed apps'
+  task :show do
+    scanner = Installer::Scanner.new
+    scanner.scan
+  end
+
+  desc 'Scan system and generate config.yml from installed apps'
+  task :generate, [:output] do |_t, args|
+    output = args[:output] || 'scanned_config.yml'
+    scanner = Installer::Scanner.new
+    scanner.generate_config(output)
+  end
+
+  desc 'Scan only Homebrew packages'
+  task :homebrew do
+    scanner = Installer::Scanner.new
+    scanner.scan([:homebrew])
+  end
+
+  desc 'Scan only version managers (rbenv, pyenv, fnm)'
+  task :versions do
+    scanner = Installer::Scanner.new
+    scanner.scan(%i[rbenv pyenv fnm])
+  end
+
+  desc 'Scan only App Store apps'
+  task :appstore do
+    scanner = Installer::Scanner.new
+    scanner.scan([:appstore])
+  end
+end
+
 # Default task
 desc 'Show available tasks'
 task :default do
@@ -406,11 +439,23 @@ task :default do
       rake config:generate    Generate sample config.yml
       rake config:validate    Validate configuration file
 
+    \e[36mScan (migrate from old Mac):\e[0m
+      rake scan:show          Scan and show installed apps
+      rake scan:generate      Generate config from installed apps
+      rake scan:homebrew      Scan only Homebrew packages
+      rake scan:versions      Scan only rbenv/pyenv/fnm
+      rake scan:appstore      Scan only App Store apps
+
     \e[33mUsage:\e[0m
       1. Run 'rake config:generate' to create config.yml
       2. Edit config.yml with your preferred apps
       3. Run 'rake status:check' to verify prerequisites
       4. Run 'rake install:all' to start installation
+
+    \e[33mMigrate from old Mac:\e[0m
+      1. On old Mac: rake scan:generate
+      2. Copy scanned_config.yml to new Mac
+      3. On new Mac: CONFIG_FILE=scanned_config.yml rake install:all
 
     \e[33mEnvironment Variables:\e[0m
       CONFIG_FILE=path/to/config.yml   Use custom config file

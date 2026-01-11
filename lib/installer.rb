@@ -5,6 +5,7 @@ require_relative 'installer/command'
 require_relative 'installer/base'
 require_relative 'installer/registry'
 require_relative 'installer/lockfile'
+require_relative 'installer/scanner'
 
 # Load all installers
 Dir[File.join(__dir__, 'installer', 'installers', '*.rb')].each do |file|

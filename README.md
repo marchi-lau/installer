@@ -7,6 +7,7 @@ A modular, uninstall-capable macOS setup automation tool built with Rake.
 - **Modular Installers** - Homebrew, rbenv, pyenv, fnm, VS Code, App Store
 - **Progress Tracking** - Colored output with progress bars
 - **Uninstall Support** - Undo installations with state persistence
+- **Scan & Migrate** - Scan old Mac and generate config for new Mac
 - **Idempotent** - Skips already-installed items
 - **Lockfile** - Prevents concurrent runs
 - **Extensible** - Plugin registry for custom installers
@@ -83,6 +84,42 @@ rake                    # Show all available tasks
 rake config:generate    # Generate sample config.yml
 rake config:validate    # Validate configuration
 ```
+
+### Scan (Migrate from Old Mac)
+
+```bash
+rake scan:show          # Scan and display installed apps
+rake scan:generate      # Generate config from installed apps
+rake scan:homebrew      # Scan only Homebrew packages
+rake scan:versions      # Scan only rbenv/pyenv/fnm
+rake scan:appstore      # Scan only App Store apps
+```
+
+## Migrate from Old Mac
+
+Transfer your setup from an old Mac to a new one:
+
+```bash
+# On OLD Mac: scan and generate config
+cd installer
+rake scan:generate
+# Creates scanned_config.yml
+
+# Copy to NEW Mac (via AirDrop, USB, cloud, etc.)
+scp scanned_config.yml newmac:~/installer/
+
+# On NEW Mac: install everything
+cd installer
+CONFIG_FILE=scanned_config.yml rake install:all
+```
+
+The scanner detects:
+- Homebrew formulae, casks, and taps
+- Ruby versions and gems (rbenv)
+- Python versions and packages (pyenv)
+- Node.js versions and npm packages (fnm)
+- VS Code extensions
+- Mac App Store apps
 
 ## Configuration
 
